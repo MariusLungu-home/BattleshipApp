@@ -7,63 +7,34 @@ namespace BattleshipUI
     {
         static void Main(string[] args)
         {
-            WelcomeMessage();
+            UI.WelcomeMessage();
 
-            PlayerInfoModel playerInfo1 = CreatePlayer("Player 1");
-            PlayerInfoModel playerInfo2 = CreatePlayer("Player 2");
+            PlayerInfoModel activePlayer = UI.CreatePlayer("Player 1");
+            PlayerInfoModel opponent = UI.CreatePlayer("Player 2");
+            PlayerInfoModel winner = null;
 
-            Console.ReadLine();
-        }
-
-        private static void WelcomeMessage()
-        {
-            Console.WriteLine("Welcome to Battleship!");
-
-            Console.WriteLine();
-        }
-
-        private static PlayerInfoModel CreatePlayer(string playerTitle)
-        {
-            PlayerInfoModel player = new PlayerInfoModel();
-
-            Console.WriteLine($"Player information for: {playerTitle}");
-
-            // ask the user for their name
-            player.Name = AskForUsersName();
-
-            // load up the shot grid
-            GameLogic.InitializeGrid(player);
-
-            // ask the user for their 5 ship placements
-            PlaceShips(player);
-
-            // clear the screen/grid
-            Console.Clear();
-
-            return player;
-        }
-
-        private static string AskForUsersName()
-        {
-            Console.WriteLine("What is your name: ");
-            string output = Console.ReadLine();
-            
-            return output;
-        }
-
-        private static void PlaceShips(PlayerInfoModel player)
-        {
             do
             {
-                Console.WriteLine($"Where do you want to place the ship { player.ShipLocations.Count + 1 }");
-                string location = Console.ReadLine();
+                UI.DisplayShotGrid(activePlayer);
+                UI.RecordPlayerShot(activePlayer, opponent);
 
-                bool isValidLocation = GameLogic.PlaceShip(player, location);
-                if (isValidLocation == false)
+                bool doesGameContinue = GameLogic.PlayerStillActive(opponent);
+
+                if (doesGameContinue == true)
                 {
-                    Console.WriteLine("That was not a valid location. Please try again.");
+                    // swap using tuple
+                    (activePlayer, opponent) = (opponent, activePlayer);
                 }
-            } while (player.ShipLocations.Count < 5);
+                else 
+                { 
+                    winner = activePlayer;
+                }
+
+            } while (winner == null);
+
+            UI.IdentifyWinner(winner);
+
+            Console.ReadLine();
         }
     }
 }
